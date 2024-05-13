@@ -13,8 +13,14 @@ async function main() {
   process.once('SIGINT', () => bot.stop('SIGINT'))
   process.once('SIGTERM', () => bot.stop('SIGTERM'))
   const statesOfInterest = ["WA", "OR"];
-  // populate this array after you have already made an appointment somewhere decent so that you can now be more strict on the location you want to find
-  const serviceCentersOfInterest = [ { state: "WA", serviceCenterId: "XSE" }, { state: "OR", serviceCenterId: "XPL" }];
+  const enableServiceCenterFilter = false;
+  const serviceCentersOfInterest = [
+    { state: "WA", serviceCenterId: "XSE" },
+    { state: "OR", serviceCenterId: "XPL" },
+    { state: "WA", serviceCenterId: "XSH" },
+  ];
+  const enableDateFilter = true;
+  const furthestAllowedDate = new Date(2024, 5, 4);
   let attempt = 1;
   while (true) {
     console.log("attempt number", attempt);
@@ -25,17 +31,21 @@ async function main() {
       const locationsArray = response?.data ?? [];
       for (const location of locationsArray) {
         if (((location?.timeSlots?.length) ?? 0) > 0) {
-          console.log(JSON.stringify(locationsArray, null, 2));
-          if (serviceCentersOfInterest.length === 0 || serviceCentersOfInterest.some((sc) => sc.state === state && sc.serviceCenterId === location.assignedServiceCenter)) {
+          if (!enableServiceCenterFilter || serviceCentersOfInterest.some((sc) => sc.state === state && sc.serviceCenterId === location.assignedServiceCenter)) {
             for (const timeSlot of location.timeSlots) {
-              bot.telegram.sendMessage(
-                process.env.CHAT_ID,
-                `Appointment available in ${state} at ${location.description} on ${timeSlot.date}`
-              );
+              const slotDate = new Date(timeSlot.date);
+              if (!enableDateFilter || slotDate < furthestAllowedDate) {
+                const msg = `Appointment available in ${state} at ${location.description} on ${timeSlot.date}`;
+                console.info(msg);
+                bot.telegram.sendMessage(
+                  process.env.CHAT_ID,
+                  msg
+                );
+              }
             }
-            player.play("alarm.wav", function (err) {
-              if (err) throw err;
-            });
+            // player.play("alarm.wav", function (err) {
+            //   if (err) throw err;
+            // });
           }
         }
       }
