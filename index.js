@@ -22,6 +22,7 @@ async function main() {
   const enableDateFilter = true;
   const furthestAllowedDate = new Date(2024, 5, 4);
   let attempt = 1;
+  let isAlreadyFound = false;
   while (true) {
     console.log("attempt number", attempt);
     for (const state of statesOfInterest) {
@@ -41,11 +42,14 @@ async function main() {
                   process.env.CHAT_ID,
                   msg
                 );
+                if (!isAlreadyFound) {
+                  player.play("alarm.wav", function (err) {
+                    if (err) throw err;
+                  });
+                }
+                isAlreadyFound = true;
               }
             }
-            // player.play("alarm.wav", function (err) {
-            //   if (err) throw err;
-            // });
           }
         }
       }
