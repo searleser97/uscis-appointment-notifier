@@ -13,18 +13,18 @@ async function main() {
   process.once('SIGINT', () => bot.stop('SIGINT'))
   process.once('SIGTERM', () => bot.stop('SIGTERM'))
   const statesOfInterest = ["WA", "OR"];
-  const enableServiceCenterFilter = false;
+  const enableServiceCenterFilter = true;
   const serviceCentersOfInterest = [
-    { state: "WA", serviceCenterId: "XSE" },
-    { state: "OR", serviceCenterId: "XPL" },
-    { state: "WA", serviceCenterId: "XSH" },
+    { state: "WA", serviceCenterId: "XSE" }, // Seattle
+    { state: "OR", serviceCenterId: "XPL" }, // Portland
+    { state: "WA", serviceCenterId: "XSH" }, // Yakima
   ];
   const enableDateFilter = true;
-  const furthestAllowedDate = new Date(2024, 5, 4);
+  const furthestAllowedDate = new Date(2024, 5, 5);
   let attempt = 1;
   let isAlreadyFound = false;
   while (true) {
-    console.log("attempt number", attempt);
+    console.log("attempt number", attempt, "on", new Date());
     for (const state of statesOfInterest) {
       const response = await axios.get(
         `https://my.uscis.gov/appointmentscheduler-appointment/field-offices/state/${state}`
